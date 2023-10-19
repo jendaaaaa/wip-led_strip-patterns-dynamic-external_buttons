@@ -62,7 +62,7 @@ let colEmpty = NeoPixelColors.White
 let colOff = NeoPixelColors.Black
 
 // time
-let TIME_DEBOUNCE = 50
+let TIME_DEBOUNCE = 30
 let TIME_LIMIT = currentLevel * 500
 let ICON_TIME = 200
 let PATTERN_PAUSE = 200
@@ -107,7 +107,11 @@ basic.forever(function () {
             canPress = false
             getButtonStrips()
             for (let i = 0; i < currentLevel; i++) {
-                arrCorrect.push(randint(0, 1))
+                let randomBit = randint(0, 1)
+                while (i >= 2 && arrCorrect[i - 2] === randomBit && arrCorrect[i - 1] === randomBit) {
+                    randomBit = randint(0, 1)
+                }
+                arrCorrect.push(randomBit)
             }
             state = SHOW_PATTERN
         }
@@ -157,6 +161,16 @@ basic.forever(function () {
 })
 
 //// FUNCTIONS
+function checkRepeat(){
+    let isRepeating = false
+    if(arrCorrect.length > 3){
+        for (let i = 1; i < arrCorrect.length; i++){
+            isRepeating = arrCorrect[i] === arrCorrect[i-1]
+        }
+    }
+    return isRepeating
+}
+
 function showButton(button: number) {
     if (button === BUTTON_A) {
         currentButtonA.showColor(colCorrectPattern)
