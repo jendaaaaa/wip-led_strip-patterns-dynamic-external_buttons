@@ -144,7 +144,10 @@ basic.forever(function () {
             arrCorrect = []
             currentLevel = currentLevel + 1
             currentLayer = currentLayer + 1
-            checkWin()
+            showPassedLayer()
+            if (currentLayer === NUM_STRIPS / 2) {
+                gameWin()
+            }
             state = GENERATING_PATTERN
         }
 
@@ -178,6 +181,12 @@ function clearButton(button: number) {
     }
 }
 
+function animColor(color: NeoPixelColors) {
+    for (let i = 0; i < NUM_STRIPS; i++) {
+        stripArr[i].showColor(color)
+    }
+}
+
 function animSwipe(colorIn: NeoPixelColors, colorOut: NeoPixelColors, delay: number, offset: number) {
     for (let i = 0; i < NUM_STRIPS/2 + offset; i++) {
         if (i < NUM_STRIPS/2) {
@@ -192,18 +201,6 @@ function animSwipe(colorIn: NeoPixelColors, colorOut: NeoPixelColors, delay: num
     }
 }
 
-function animSwipeDir(colorIn: NeoPixelColors, colorOut: NeoPixelColors, delay: number, offset: number) {
-    for (let i = 0; i < NUM_STRIPS + offset; i++) {
-        if (i < NUM_STRIPS) {
-            stripArr[i].showColor(colorIn)
-        }
-        if (i >= offset) {
-            stripArr[i - offset].showColor(colorOut)
-        }
-        pause(delay)
-    }
-}
-
 function animSwipeReverse(colorIn: NeoPixelColors, colorOut: NeoPixelColors, delay: number, offset: number) {
     for (let i = 0; i < NUM_STRIPS/2 + offset; i++) {
         if (i < NUM_STRIPS/2) {
@@ -213,6 +210,18 @@ function animSwipeReverse(colorIn: NeoPixelColors, colorOut: NeoPixelColors, del
         if (i >= offset) {
             stripArr[NUM_STRIPS/2 - 1 - i + offset].showColor(colorOut)
             stripArr[NUM_STRIPS/2 + i - offset].showColor(colorOut)
+        }
+        pause(delay)
+    }
+}
+
+function animSwipeDir(colorIn: NeoPixelColors, colorOut: NeoPixelColors, delay: number, offset: number) {
+    for (let i = 0; i < NUM_STRIPS + offset; i++) {
+        if (i < NUM_STRIPS) {
+            stripArr[i].showColor(colorIn)
+        }
+        if (i >= offset) {
+            stripArr[i - offset].showColor(colorOut)
         }
         pause(delay)
     }
@@ -235,21 +244,12 @@ function showPassedLayer() {
     currentButtonB.showColor(colPassedLayer)
 }
 
-function animColor(color: NeoPixelColors) {
-    for (let i = 0; i < NUM_STRIPS; i++) {
-        stripArr[i].showColor(color)
-    }
-}
-
-function checkWin() {
-    showPassedLayer()
-    if (currentLayer === NUM_STRIPS / 2) {
-        animSwipeReverse(colOff, colOff, ANIM_SWIPE_DELAY, 1)
-        pause(200)
-        animSwipe(colPassedLayer, colEmpty, ANIM_SWIPE_DELAY, ANIM_SWIPE_OFFSET)
-        currentLayer = 0
-        currentLevel = INITIAL_LEVEL
-    }
+function gameWin() {
+    animSwipeReverse(colOff, colOff, ANIM_SWIPE_DELAY, 1)
+    pause(200)
+    animSwipe(colPassedLayer, colEmpty, ANIM_SWIPE_DELAY, ANIM_SWIPE_OFFSET)
+    currentLayer = 0
+    currentLevel = INITIAL_LEVEL
 }
 
 function getButtonStrips() {
