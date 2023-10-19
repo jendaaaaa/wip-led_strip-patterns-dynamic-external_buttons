@@ -235,32 +235,16 @@ function showPassedLayer() {
     currentButtonB.showColor(colPassedLayer)
 }
 
-function showCorrect() {
+function animColor(color: NeoPixelColors) {
     for (let i = 0; i < NUM_STRIPS; i++) {
-        stripArr[i].showColor(NeoPixelColors.Green)
-    }
-    pause(CORRECT_WRONG_PAUSE)
-    for (let i = 0; i < NUM_STRIPS; i++) {
-        stripArr[i].clear()
-        stripArr[i].show()
-    }
-}
-
-function showWrong() {
-    for (let i = 0; i < NUM_STRIPS; i++) {
-        stripArr[i].showColor(NeoPixelColors.Red)
-    }
-    pause(CORRECT_WRONG_PAUSE)
-    for (let i = 0; i < NUM_STRIPS; i++) {
-        stripArr[i].clear()
-        stripArr[i].show()
+        stripArr[i].showColor(color)
     }
 }
 
 function checkWin() {
     showPassedLayer()
     if (currentLayer === NUM_STRIPS / 2) {
-        animSwipe(colOff, colEmpty, ANIM_SWIPE_DELAY, ANIM_SWIPE_OFFSET)
+        animSwipeReverse(colOff, colOff, ANIM_SWIPE_DELAY, 1)
         pause(200)
         animSwipe(colPassedLayer, colEmpty, ANIM_SWIPE_DELAY, ANIM_SWIPE_OFFSET)
         currentLayer = 0
