@@ -1,7 +1,7 @@
 //// INIT
 led.enable(false)
 let stripArr: neopixel.Strip[] = [];
-let NUM_LEDS_PER_STRIP = 6;
+let NUM_LEDS_PER_STRIP = 18;
 let PINS_ARR = [
     DigitalPin.P0,
     DigitalPin.P1,
@@ -14,7 +14,7 @@ let PINS_ARR = [
 for (let i = 0; i < PINS_ARR.length; i++) {
     let strip = neopixel.create(PINS_ARR[i], NUM_LEDS_PER_STRIP, NeoPixelMode.RGB);
     strip.clear();
-    strip.setBrightness(5)
+    // strip.setBrightness(50)
     strip.show();
     stripArr.push(strip);
 }
@@ -53,22 +53,24 @@ let arrInput: number[] = []
 let arrCorrect: number[] = []
 
 // color
+let colOrange = 16725760
+
 let colButtonPressed = NeoPixelColors.Blue
-let colCorrectPattern = NeoPixelColors.Orange
+let colCorrectPattern = NeoPixelColors.White
 let colPassedLayer = NeoPixelColors.Green
 let colWrongPattern = NeoPixelColors.Red
 let colInitialSwipe = NeoPixelColors.White
-let colEmpty = NeoPixelColors.White
+let colWin = NeoPixelColors.Green
+let colEmpty = colOrange
 let colOff = NeoPixelColors.Black
 
 // time
 let TIME_DEBOUNCE = 30
-let TIME_LIMIT = currentLevel * 500
-let ICON_TIME = 200
-let PATTERN_PAUSE = 200
+let TIME_LIMIT = 200000
+let PATTERN_PAUSE = 400
 let CORRECT_WRONG_PAUSE = 400
 let INIT_DELAY = 500
-let ANIM_SWIPE_DELAY = 40
+let ANIM_SWIPE_DELAY = 50
 
 // states
 let TESTING = -2
@@ -247,7 +249,7 @@ function showPassedLayer() {
 function gameWin() {
     animSwipeReverse(colOff, colOff, ANIM_SWIPE_DELAY, 1)
     pause(200)
-    animSwipe(colPassedLayer, colEmpty, ANIM_SWIPE_DELAY, ANIM_SWIPE_OFFSET)
+    animSwipe(colWin, colEmpty, ANIM_SWIPE_DELAY, ANIM_SWIPE_OFFSET)
     currentLayer = 0
     currentLevel = INITIAL_LEVEL
 }
@@ -311,13 +313,17 @@ function debounceButtonA(){
     if (input.runningTime() - lastDebounceTimeA > TIME_DEBOUNCE){
         if (buttonRead !== buttonStateA){
             buttonStateA = buttonRead
-            if (buttonStateA === PIN_PRESSED){
-                canContinue = false
-                arrInput.push(BUTTON_A)
-                currentButtonA.showColor(colButtonPressed)
-            } else {
-                canContinue = true
-                currentButtonA.showColor(colEmpty)
+            if (buttonStateB !== PIN_PRESSED){
+                if (buttonStateA === PIN_PRESSED){
+                    if (buttonStateB !== PIN_PRESSED){
+                        canContinue = false
+                        arrInput.push(BUTTON_A)
+                        currentButtonA.showColor(colButtonPressed)
+                    }
+                } else {
+                    canContinue = true
+                    currentButtonA.showColor(colEmpty)
+                }
             }
         }
     }
@@ -334,13 +340,15 @@ function debounceButtonB() {
     if (input.runningTime() - lastDebounceTimeB > TIME_DEBOUNCE) {
         if (buttonRead !== buttonStateB) {
             buttonStateB = buttonRead
-            if (buttonStateB === PIN_PRESSED) {
-                canContinue = false
-                arrInput.push(BUTTON_B)
-                currentButtonB.showColor(colButtonPressed)
-            } else {
-                canContinue = true
-                currentButtonB.showColor(colEmpty)
+            if (buttonStateA !== PIN_PRESSED){
+                if (buttonStateB === PIN_PRESSED) {
+                    canContinue = false
+                    arrInput.push(BUTTON_B)
+                    currentButtonB.showColor(colButtonPressed)
+                } else {
+                    canContinue = true
+                    currentButtonB.showColor(colEmpty)
+                }
             }
         }
     }
