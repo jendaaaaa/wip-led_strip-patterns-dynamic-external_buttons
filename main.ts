@@ -41,6 +41,9 @@ let PIN_PRESSED = 0
 let PIN_RELEASED = 1
 
 // init
+let inactiveTime = 0
+let brightness = 255
+let increase = false
 let currentLayer = 0
 let currentButtonA = stripArr[0]
 let currentButtonB = stripArr[7]
@@ -64,9 +67,14 @@ let colWin = NeoPixelColors.Green
 let colEmpty = colOrange
 let colOff = NeoPixelColors.Black
 
+// pulsing
+let PULSE_LIM_L = 60
+let PULSE_LIM_H = 240
+let PULSE_STEP = 8
+
 // time
 let TIME_DEBOUNCE = 30
-let TIME_LIMIT = 200000
+let INACTIVE_TIME_LIMIT = 10000
 let PATTERN_PAUSE = 400
 let CORRECT_WRONG_PAUSE = 400
 let INIT_DELAY = 500
@@ -80,11 +88,17 @@ let SHOW_PATTERN = 1
 let CHECKING_INPUT = 2
 let CORRECT_INPUT = 3
 let WRONG_INPUT = 4
+let STANDBY = 5
 
 //// STATE MACHINE
+inactiveTime = input.runningTime()
 let state = INITIALIZATION
-// state = TESTING
+// state = STANDBY
 basic.forever(function () {
+    if (input.runningTime() - inactiveTime > INACTIVE_TIME_LIMIT){
+        state = STANDBY
+    }
+
     if (canPress){
         debounceButtonA()
         debounceButtonB()
@@ -92,12 +106,13 @@ basic.forever(function () {
 
     if (canContinue) {
         if (state === TESTING) {
-            animSwipe(colWrongPattern, colEmpty, ANIM_SWIPE_DELAY, ANIM_SWIPE_OFFSET)
-            pause(1000)
         }
 
         else if (state === INITIALIZATION) {
             canPress = false
+            arrCorrect = []
+            arrInput = []
+            currentLevel = INITIAL_LEVEL
             animSwipe(colOff, colEmpty, ANIM_SWIPE_DELAY, ANIM_SWIPE_OFFSET)
             pause(INIT_DELAY)
             animSwipe(colInitialSwipe, colEmpty, ANIM_SWIPE_DELAY, ANIM_SWIPE_OFFSET)
@@ -161,6 +176,10 @@ basic.forever(function () {
             animSwipeReverse(colWrongPattern, colEmpty, ANIM_SWIPE_DELAY, ANIM_SWIPE_OFFSET)
             currentLevel = INITIAL_LEVEL
             state = GENERATING_PATTERN
+        }
+
+        else if (state === STANDBY){
+            pulseAnim(colOrange)
         }
     }
 })
@@ -241,6 +260,26 @@ function animSwipeReverseDir(colorIn: NeoPixelColors, colorOut: NeoPixelColors, 
     }
 }
 
+function pulseAnim(color: NeoPixelColors){
+    animColor(color)
+    for (let i = 0; i < stripArr.length; i++){
+        stripArr[i].setBrightness(brightness)
+    }
+    if (increase){
+        if (brightness < PULSE_LIM_H){
+            brightness = brightness + PULSE_STEP
+        } else {
+            increase = false
+        }
+    } else {
+        if (brightness > PULSE_LIM_L){
+            brightness = brightness - PULSE_STEP
+        } else {
+            increase = true
+        }
+    }
+}
+
 function showPassedLayer() {
     currentButtonA.showColor(colPassedLayer)
     currentButtonB.showColor(colPassedLayer)
@@ -314,16 +353,18 @@ function debounceButtonA(){
         if (buttonRead !== buttonStateA){
             buttonStateA = buttonRead
             if (buttonStateB !== PIN_PRESSED){
+                if (state === STANDBY) {
+                    state = INITIALIZATION
+                }
                 if (buttonStateA === PIN_PRESSED){
-                    if (buttonStateB !== PIN_PRESSED){
-                        canContinue = false
-                        arrInput.push(BUTTON_A)
-                        currentButtonA.showColor(colButtonPressed)
-                    }
+                    canContinue = false
+                    arrInput.push(BUTTON_A)
+                    currentButtonA.showColor(colButtonPressed)
                 } else {
                     canContinue = true
                     currentButtonA.showColor(colEmpty)
                 }
+                inactiveTime = input.runningTime()
             }
         }
     }
@@ -341,6 +382,9 @@ function debounceButtonB() {
         if (buttonRead !== buttonStateB) {
             buttonStateB = buttonRead
             if (buttonStateA !== PIN_PRESSED){
+                if (state === STANDBY){
+                    state = INITIALIZATION
+                }
                 if (buttonStateB === PIN_PRESSED) {
                     canContinue = false
                     arrInput.push(BUTTON_B)
@@ -349,6 +393,7 @@ function debounceButtonB() {
                     canContinue = true
                     currentButtonB.showColor(colEmpty)
                 }
+                inactiveTime = input.runningTime()
             }
         }
     }
