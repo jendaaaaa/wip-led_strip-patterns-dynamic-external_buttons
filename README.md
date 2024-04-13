@@ -1,3 +1,5 @@
+## MICRO:BIT PROJECT
+Deactivate a bomb!
 
 > Open this page at [https://jendaaaaa.github.io/wip-led_strip-patterns-dynamic-external_buttons/](https://jendaaaaa.github.io/wip-led_strip-patterns-dynamic-external_buttons/)
 
