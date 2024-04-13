@@ -1,3 +1,4 @@
+// LED strip patterns - external buttons
 //// INIT
 led.enable(false)
 let stripArr: neopixel.Strip[] = [];
